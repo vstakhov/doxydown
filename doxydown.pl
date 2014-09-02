@@ -15,8 +15,9 @@ my $default_language = "lua";
 sub print_module_markdown {
 	my ( $mname, $m ) = @_;
 
+	my $idline = $options{g} ? " {#$m->{'id'}}" : "";
 	print <<EOD;
-## Module `$mname`  {#$m->{'id'}}
+## Module `$mname`$idline
 
 $m->{'data'}
 EOD
@@ -25,7 +26,7 @@ EOD
 
 Example:
 
-~~~m->{'example_language'}
+~~~$m->{'example_language'}
 $m->{'example'}
 ~~~
 EOD
@@ -53,8 +54,9 @@ EOD
 sub print_function_markdown {
 	my ( $type, $fname, $f ) = @_;
 
+	my $idline = $options{g} ? " {#$f->{'id'}}" : "";
 	print <<EOD;
-### $type `$fname`  {#$f->{'id'}}
+### $type `$fname`$idline
 
 $f->{'data'}
 EOD
@@ -126,8 +128,17 @@ sub make_id {
 	if ( !$prefix ) {
 		$prefix = "f";
 	}
-	$name =~ /^(\S+).*$/;
-	return substr( $prefix . md5_hex($1), 0, 6 );
+	if ( !$options{g} ) {
+		# Kramdown/pandoc version of ID's
+		$name =~ /^(\S+).*$/;
+		return substr( substr( $prefix, 0, 1 ) . md5_hex($1), 0, 6 );
+	}
+	else {
+		my $input = lc $prefix . "-" . $name;
+		my $id = join '-', split /\s+/, $input;
+		$id =~ s/[^\w_-]+//g;
+		return $id;
+	}
 }
 
 sub substitute_data_keywords {
@@ -148,11 +159,11 @@ sub parse_function {
 	my ( $type, $name ) = ( $func =~ /^\@(\w+)\s*(.+)\s*$/ );
 
 	my $f = {
-		name    => $name,
-		data    => '',
-		example => undef,
+		name             => $name,
+		data             => '',
+		example          => undef,
 		example_language => $default_language,
-		id      => make_id($name),
+		id               => make_id( $name, $type ),
 	};
 	my $example = 0;
 
@@ -201,12 +212,12 @@ sub parse_module {
 	my ($name) = ( $module =~ /^\@module\s*(.+)\s*$/ );
 
 	$modules{$name} = {
-		functions => [],
-		methods   => [],
-		data      => '',
-		example   => undef,
+		functions        => [],
+		methods          => [],
+		data             => '',
+		example          => undef,
 		example_language => $default_language,
-		id        => make_id( $name, 'm' ),
+		id               => make_id( $name, "module" ),
 	};
 	my $f       = $modules{$name};
 	my $example = 0;
@@ -253,17 +264,18 @@ sub HELP_MESSAGE {
 	print STDERR <<EOF;
 Utility to convert doxygen comments to markdown.
 
-usage: $0 [-h] [-l language]
+usage: $0 [-hg] [-l language] < input_source > markdown.md
 
  -h        : this (help) message
  -l        : sets default example language (default: lua)
+ -g        : use github flavoured markdown (default: kramdown/pandoc)
 EOF
 	exit;
 }
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 use Getopt::Std;
-getopts('hl:', \%options);
+getopts( 'hl:g', \%options );
 
 HELP_MESSAGE() if $options{h};
 
@@ -291,7 +303,7 @@ while (<>) {
 			$content = "";
 		}
 		else {
-			my ($line) = ( $_ =~ /^(?:\s*\*\s)?(.+)\s*$/ );
+			my ($line) = ( $_ =~ /^(?:\s*\*\s)?(\s*\S.+)\s*$/ );
 			if ($line) {
 				$content .= $line . "\n";
 			}
