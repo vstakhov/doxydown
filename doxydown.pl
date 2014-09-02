@@ -5,15 +5,9 @@ use warnings;
 use Data::Dumper;
 use Digest::MD5 qw(md5_hex);
 
-use constant {
-	STATE_READ_SKIP    => 0,
-	STATE_READ_CONTENT => 1,
-};
-
-my $state = STATE_READ_SKIP;
-my $content;
 my %modules = ();
 my $cur_module;
+my $default_language = "lua";
 
 sub print_module_markdown {
 	my ( $mname, $m ) = @_;
@@ -28,7 +22,7 @@ EOD
 
 Example:
 
-~~~lua
+~~~m->{'example_language'}
 $m->{'example'}
 ~~~
 EOD
@@ -94,7 +88,7 @@ EOD
 
 Example:
 
-~~~lua
+~~~$f->{'example_language'}
 $f->{'example'}
 ~~~
 EOD
@@ -154,6 +148,7 @@ sub parse_function {
 		name    => $name,
 		data    => '',
 		example => undef,
+		example_language => $default_language,
 		id      => make_id($name),
 	};
 	my $example = 0;
@@ -167,8 +162,11 @@ sub parse_function {
 			my $r = { type => $1, description => $2 };
 			$f->{'return'} = $r;
 		}
-		elsif (/^\@example$/) {
+		elsif (/^\@example\s*(\S)?\s*$/) {
 			$example = 1;
+			if ($1) {
+				$f->{'example_language'} = $1;
+			}
 		}
 		elsif ( $_ ne $func ) {
 			if ($example) {
@@ -204,14 +202,18 @@ sub parse_module {
 		methods   => [],
 		data      => '',
 		example   => undef,
+		example_language => $default_language,
 		id        => make_id( $name, 'm' ),
 	};
 	my $f       = $modules{$name};
 	my $example = 0;
 
 	foreach (@data) {
-		if (/^\@example$/) {
+		if (/^\@example\s*(\S)?\s*$/) {
 			$example = 1;
+			if ($1) {
+				$f->{'example_language'} = $1;
+			}
 		}
 		elsif ( $_ ne $module ) {
 			if ($example) {
@@ -232,7 +234,7 @@ sub parse_module {
 }
 
 sub parse_content {
-	my @func = grep /^\@function|method.+$/, @_;
+	my @func = grep /^\@(?:function)|(?:method).+$/, @_;
 	if ( scalar @func > 0 ) {
 		parse_function( $func[0], @_ );
 	}
@@ -243,6 +245,14 @@ sub parse_content {
 		}
 	}
 }
+
+use constant {
+	STATE_READ_SKIP    => 0,
+	STATE_READ_CONTENT => 1,
+};
+
+my $state = STATE_READ_SKIP;
+my $content;
 
 while (<>) {
 	if ( $state == STATE_READ_SKIP ) {
