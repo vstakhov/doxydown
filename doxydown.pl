@@ -15,7 +15,7 @@ my $default_language = "lua";
 sub print_module_markdown {
 	my ( $mname, $m ) = @_;
 
-	my $idline = $options{g} ? " {#$m->{'id'}}" : "";
+	my $idline = $options{g} ? "" :  " {#$m->{'id'}}";
 	print <<EOD;
 ## Module `$mname`$idline
 
@@ -54,7 +54,7 @@ EOD
 sub print_function_markdown {
 	my ( $type, $fname, $f ) = @_;
 
-	my $idline = $options{g} ? " {#$f->{'id'}}" : "";
+	my $idline = $options{g} ? "" : " {#$f->{'id'}}";
 	print <<EOD;
 ### $type `$fname`$idline
 
