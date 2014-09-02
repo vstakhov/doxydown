@@ -1,11 +1,14 @@
 #!/usr/bin/env perl
 
+$VERSION = "0.1";
+
 use strict;
 use warnings;
 use Data::Dumper;
 use Digest::MD5 qw(md5_hex);
 
 my %modules = ();
+my %options = ();
 my $cur_module;
 my $default_language = "lua";
 
@@ -245,6 +248,26 @@ sub parse_content {
 		}
 	}
 }
+
+sub HELP_MESSAGE {
+	print STDERR <<EOF;
+Utility to convert doxygen comments to markdown.
+
+usage: $0 [-h] [-l language]
+
+ -h        : this (help) message
+ -l        : sets default example language (default: lua)
+EOF
+	exit;
+}
+
+$Getopt::Std::STANDARD_HELP_VERSION = 1;
+use Getopt::Std;
+getopts('hl:', \%options);
+
+HELP_MESSAGE() if $options{h};
+
+$default_language = $options{l} if $options{l};
 
 use constant {
 	STATE_READ_SKIP    => 0,
