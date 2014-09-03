@@ -10,12 +10,27 @@ use Digest::MD5 qw(md5_hex);
 my %modules = ();
 my %options = ();
 my $cur_module;
-my $default_language = "lua";
+my $example_language = "lua";
+
+my %languages = (
+	c => {
+		start  => qr/^\s*\/\*\*\*\s*$/,
+		end    => qr/^\s*\*\/$/,
+		filter => qr/^(?:\s*\*\s)?(\s*\S.+)\s*$/,
+	},
+	lua => {
+		start  => qr/^\s*\--\[\[\[\s*$/,
+		end    => qr/^\s*--\]\]\s*/,
+		filter => qr/^(?:\s*--\s)?(\s*\S.+)\s*$/,
+	},
+);
+
+my $language;
 
 sub print_module_markdown {
 	my ( $mname, $m ) = @_;
 
-	my $idline = $options{g} ? "" :  " {#$m->{'id'}}";
+	my $idline = $options{g} ? "" : " {#$m->{'id'}}";
 	print <<EOD;
 ## Module `$mname`$idline
 
@@ -129,6 +144,7 @@ sub make_id {
 		$prefix = "f";
 	}
 	if ( !$options{g} ) {
+
 		# Kramdown/pandoc version of ID's
 		$name =~ /^(\S+).*$/;
 		return substr( substr( $prefix, 0, 1 ) . md5_hex($1), 0, 6 );
@@ -162,7 +178,7 @@ sub parse_function {
 		name             => $name,
 		data             => '',
 		example          => undef,
-		example_language => $default_language,
+		example_language => $example_language,
 		id               => make_id( $name, $type ),
 	};
 	my $example = 0;
@@ -216,7 +232,7 @@ sub parse_module {
 		methods          => [],
 		data             => '',
 		example          => undef,
-		example_language => $default_language,
+		example_language => $example_language,
 		id               => make_id( $name, "module" ),
 	};
 	my $f       = $modules{$name};
@@ -267,7 +283,8 @@ Utility to convert doxygen comments to markdown.
 usage: $0 [-hg] [-l language] < input_source > markdown.md
 
  -h        : this (help) message
- -l        : sets default example language (default: lua)
+ -e        : sets default example language (default: lua)
+ -l        : sets input language (default: c)
  -g        : use github flavoured markdown (default: kramdown/pandoc)
 EOF
 	exit;
@@ -275,11 +292,16 @@ EOF
 
 $Getopt::Std::STANDARD_HELP_VERSION = 1;
 use Getopt::Std;
-getopts( 'hl:g', \%options );
+getopts( 'he:gl:', \%options );
 
 HELP_MESSAGE() if $options{h};
 
-$default_language = $options{l} if $options{l};
+$example_language = $options{e} if $options{e};
+$language = $languages{ lc $options{l} } if $options{l};
+
+if ( !$language ) {
+	$language = $languages{c};
+}
 
 use constant {
 	STATE_READ_SKIP    => 0,
@@ -291,19 +313,19 @@ my $content;
 
 while (<>) {
 	if ( $state == STATE_READ_SKIP ) {
-		if ( $_ =~ /^\s*\/\*\*\*$/ ) {
+		if ( $_ =~ $language->{start} ) {
 			$state   = STATE_READ_CONTENT;
 			$content = "";
 		}
 	}
 	elsif ( $state == STATE_READ_CONTENT ) {
-		if ( $_ =~ /^\s*\*\/$/ ) {
+		if ( $_ =~ $language->{end} ) {
 			$state = STATE_READ_SKIP;
 			parse_content( split /^/, $content );
 			$content = "";
 		}
 		else {
-			my ($line) = ( $_ =~ /^(?:\s*\*\s)?(\s*\S.+)\s*$/ );
+			my ($line) = ( $_ =~ $language->{filter} );
 			if ($line) {
 				$content .= $line . "\n";
 			}
