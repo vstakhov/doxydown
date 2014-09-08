@@ -8,6 +8,25 @@ At the moment, doxydown can work with C and lua comments and produce kramdown/pa
 flavoured markdown. Doxydown produces output with anchors, links and table of content.
 It also can highlight syntax for examples in the documentation.
 
+### Why markdown
+
+Markdown is used by many contemporary engines and can be rendered to HTML using
+advanced templates, styles and scripts. Markdown provides excellent formatting
+capabilities while it doesn't require authors to be web designers to create
+documentation. Markdown is rendered by [`github`](https://github.com) and
+doxydown can generate documentation easily viewed directly inside github. Moreover,
+doxydown supports pandoc style of markdown and that means that markdown output 
+can be converted to all formats supported by pandoc (html, pdf, latex,
+man pages and many others).
+
+### Why not <other documentation generator>
+
+Doxydown is extremely simple as it can output markdown only but it is very
+convenient tool to generate nice markdown with all features required from the
+documentation system. Doxydown uses input format that is very close to `doxygen`
+that allows to re-use the existing documentation comments. Currenly, doxydown
+does not support many features but they could be easily added on demand.
+
 ## Input format
 
 Doxydown extracts documentation from the comments blocks. The start of block is indicated by
@@ -98,6 +117,13 @@ Doxydown can generate github flavoured markdown and pandoc/kramdown compatible
 markdown. The main difference is in how anchors are organized. In kramdown and
 pandoc it is possible to specify an explicit id for each header, whilst in
 GH flavoured markdown we can use only implicit anchors.
+
+### Examples
+
+You can see an example of github flavoured markdown render at 
+[libucl github page](https://github.com/vstakhov/libucl/blob/master/doc/lua_api.md).
+The same page bu rendered by kramdown engine in `jekyll` platform can be 
+accessed by [this address](https://rspamd.com/doc/lua/ucl.html).
 
 ## Program invocation
 
