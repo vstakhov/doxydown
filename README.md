@@ -19,7 +19,7 @@ doxydown supports pandoc style of markdown and that means that markdown output
 can be converted to all formats supported by pandoc (html, pdf, latex,
 man pages and many others).
 
-### Why not <other documentation generator>
+### Why not `other documentation generator`
 
 Doxydown is extremely simple as it can output markdown only but it is very
 convenient tool to generate nice markdown with all features required from the
