@@ -7,7 +7,7 @@ use warnings;
 use Data::Dumper;
 use Digest::MD5 qw(md5_hex);
 
-my %modules = ();
+my @modules;
 my %options = ();
 my $cur_module;
 my $example_language = "lua";
@@ -116,7 +116,8 @@ EOD
 }
 
 sub print_markdown {
-	while ( my ( $mname, $m ) = each %modules ) {
+	for my $m (@modules) {
+		my $mname = $m->{name};
 		print_module_markdown( $mname, $m );
 
 		print
@@ -225,9 +226,10 @@ sub parse_function {
 sub parse_module {
 	my ( $module, @data ) = @_;
 
-	my ($name) = ( $module =~ /^\@module\s*(.+)\s*$/ );
-
-	$modules{$name} = {
+	my ( $name ) = ( $module =~ /^\@module\s*(.+)\s*$/ );
+	
+	my $f = {
+		name             => $name,
 		functions        => [],
 		methods          => [],
 		data             => '',
@@ -235,7 +237,6 @@ sub parse_module {
 		example_language => $example_language,
 		id               => make_id( $name, "module" ),
 	};
-	my $f       = $modules{$name};
 	my $example = 0;
 
 	foreach (@data) {
@@ -261,10 +262,11 @@ sub parse_module {
 		chomp $f->{'example'};
 	}
 	$cur_module = $f;
+	push @modules, $f;
 }
 
 sub parse_content {
-	my @func = grep /^\@(?:function)|(?:method).+$/, @_;
+	my @func = grep /^(?:\@function)|(?:\@method).+$/, @_;
 	if ( scalar @func > 0 ) {
 		parse_function( $func[0], @_ );
 	}
@@ -337,5 +339,5 @@ while (<>) {
 	}
 }
 
-#print Dumper( \%modules );
+#print Dumper( \@modules );
 print_markdown;
