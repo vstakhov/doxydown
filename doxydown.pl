@@ -15,8 +15,8 @@ my $example_language = "lua";
 my %languages = (
     c => {
         start  => qr/^\s*\/\*\*\*(?:\s*|(\s+\S.+\s*))$/,
-        end    => qr/^\s*\*\/$/,
-        filter => qr/^(?:\s*\*\s)?(\s*\S.+)\s*$/,
+        end    => qr/^\s*\*+\/\s*$/,
+        filter => qr/^(?:\s*\*+\s?)?(\s*[^*].+)\s*$/,
     },
     lua => {
         start  => qr/^\s*\--\[\[\[\s*$/,
@@ -24,6 +24,9 @@ my %languages = (
         filter => qr/^(?:\s*--\s)?(\s*\S.+)\s*$/,
     },
 );
+
+my $function_re = qr/^\s*\@(function|fn|method)\s*(\S.+)$/oi;
+my $module_re = qr/^\s*\@(?:module|file)\s*(\S.+)$/oi;
 
 my $language;
 
@@ -173,7 +176,9 @@ sub substitute_data_keywords {
 sub parse_function {
     my ( $func, @data ) = @_;
 
-    my ( $type, $name ) = ( $func =~ /^\@(\w+)\s*(.+)\s*$/ );
+    my ( $type, $name ) = ( $func =~ $function_re );
+
+    chomp $name;
 
     my $f = {
         name             => $name,
@@ -211,22 +216,27 @@ sub parse_function {
     if ( $f->{'data'} ) {
         chomp $f->{'data'};
     }
+    elsif ($f->{'brief'}) {
+        chomp $f->{'brief'};
+        $f->{'data'} = $f->{'brief'};
+    }
     if ( $f->{'example'} ) {
         chomp $f->{'example'};
     }
 
-    if ( $type eq "function" ) {
-        push @{ $cur_module->{'functions'} }, $f;
+    if ( $type eq "method" ) {
+        push @{ $cur_module->{'methods'} }, $f;
     }
     else {
-        push @{ $cur_module->{'methods'} }, $f;
+        push @{ $cur_module->{'functions'} }, $f;
     }
 }
 
 sub parse_module {
     my ( $module, @data ) = @_;
+    my ( $name ) = ( $module =~ $module_re );
 
-    my ( $name ) = ( $module =~ /^\@module\s*(.+)\s*$/ );
+    chomp $name;
 
     my $f = {
         name             => $name,
@@ -266,15 +276,14 @@ sub parse_module {
 }
 
 sub parse_content {
-    my @func = grep /^(?:\@function)|(?:\@method).+$/, @_;
+    my @func = grep /$function_re/, @_;
     if ( scalar @func > 0 ) {
         parse_function( $func[0], @_ );
     }
-    else {
-        my @module = grep /^\@module.+$/, @_;
-        if ( scalar @module > 0 ) {
-            parse_module( $module[0], @_ );
-        }
+
+    my @module = grep /$module_re/, @_;
+    if ( scalar @module > 0 ) {
+        parse_module( $module[0], @_ );
     }
 }
 
