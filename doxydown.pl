@@ -64,13 +64,17 @@ EOD
     }
 
     print "\n###Brief content:\n\n";
-    print "**Functions**:\n\n";
-    foreach ( @{ $m->{'functions'} } ) {
+    if (scalar(@{ $m->{'functions'} }) > 0) {
+        print "**Functions**:\n\n";
+        foreach ( @{ $m->{'functions'} } ) {
         print_func($_);
+        }
     }
-    print "\n\n**Methods**:\n\n";
-    foreach ( @{ $m->{'methods'} } ) {
-        print_func($_);
+    if (scalar(@{ $m->{'methods'} }) > 0) {
+        print "\n\n**Methods**:\n\n";
+        foreach (@{ $m->{'methods'} }) {
+            print_func($_);
+        }
     }
 }
 
@@ -128,20 +132,26 @@ sub print_markdown {
         my $mname = $m->{name};
         print_module_markdown( $mname, $m );
 
-        print
-            "\n## Functions\n\nThe module `$mname` defines the following functions.\n\n";
-        foreach ( @{ $m->{'functions'} } ) {
-            print_function_markdown( "Function", $_->{'name'}, $_ );
-            print "\nBack to [module description](#$m->{'id'}).\n\n";
+        if (scalar(@{ $m->{'functions'} }) > 0) {
+            print
+                "\n## Functions\n\nThe module `$mname` defines the following functions.\n\n";
+            foreach (@{ $m->{'functions'} }) {
+                print_function_markdown( "Function", $_->{'name'}, $_ );
+                print "\nBack to [module description](#$m->{'id'}).\n\n";
 
+            }
         }
-        print
-            "\n## Methods\n\nThe module `$mname` defines the following methods.\n\n";
-        foreach ( @{ $m->{'methods'} } ) {
-            print_function_markdown( "Method", $_->{'name'}, $_ );
-            print "\nBack to [module description](#$m->{'id'}).\n\n";
 
+        if (scalar(@{ $m->{'methods'} }) > 0) {
+            print
+                "\n## Methods\n\nThe module `$mname` defines the following methods.\n\n";
+            foreach (@{ $m->{'methods'} }) {
+                print_function_markdown( "Method", $_->{'name'}, $_ );
+                print "\nBack to [module description](#$m->{'id'}).\n\n";
+
+            }
         }
+
         print "\nBack to [top](#).\n\n";
     }
 }
