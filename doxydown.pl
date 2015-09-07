@@ -55,7 +55,12 @@ EOD
 
         my $name = $f->{'name'};
         my $id   = $f->{'id'};
-        print "> [`$name`](#$id)\n\n";
+        if ($f->{'brief'}) {
+            print "> [`$name`](#$id): ". $f->{'brief'} . "\n\n";
+        }
+        else {
+            print "> [`$name`](#$id)\n\n";
+        }
     }
 
     print "\n###Brief content:\n\n";
@@ -190,15 +195,18 @@ sub parse_function {
     my $example = 0;
 
     foreach (@data) {
-        if (/^\@param\s*(?:\{([^}]+)\})?\s*(\S+)\s*(.+)?\s*$/) {
+        if (/^\s*\@param\s*(?:\{([^}]+)\})?\s*(\S+)\s*(.+)?\s*$/) {
             my $p = { name => $2, type => $1, description => $3 };
             push @{ $f->{'params'} }, $p;
         }
-        elsif (/^\@return\s*(?:\{([^}]+)\})?\s*(.+)?\s*$/) {
+        elsif (/^\s*\@return\s*(?:\{([^}]+)\})?\s*(.+)?\s*$/) {
             my $r = { type => $1, description => $2 };
             $f->{'return'} = $r;
         }
-        elsif (/^\@example\s*(\S)?\s*$/) {
+        elsif (/^\s*\@brief\s*(\S.+)$/) {
+            $f->{'brief'} = $1;
+        }
+        elsif (/^\s*\@example\s*(\S)?\s*$/) {
             $example = 1;
             if ($1) {
                 $f->{'example_language'} = $1;
@@ -250,11 +258,14 @@ sub parse_module {
     my $example = 0;
 
     foreach (@data) {
-        if (/^\@example\s*(\S)?\s*$/) {
+        if (/^\s*\@example\s*(\S)?\s*$/) {
             $example = 1;
             if ($1) {
                 $f->{'example_language'} = $1;
             }
+        }
+        elsif (/^\s*\@brief\s*(\S.+)$/) {
+            $f->{'brief'} = $1;
         }
         elsif ( $_ ne $module ) {
             if ($example) {
@@ -267,6 +278,10 @@ sub parse_module {
     }
     if ( $f->{'data'} ) {
         chomp $f->{'data'};
+    }
+    elsif ($f->{'brief'}) {
+        chomp $f->{'brief'};
+        $f->{'data'} = $f->{'brief'};
     }
     if ( $f->{'example'} ) {
         chomp $f->{'example'};
