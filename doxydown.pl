@@ -352,9 +352,11 @@ my $content;
 while (<>) {
     if ( $state == STATE_READ_SKIP ) {
         if ( $_ =~ $language->{start} ) {
-            $state   = STATE_READ_CONTENT;
-            if (!empty($1)) {
-                $content = strip $1;
+            $state = STATE_READ_CONTENT;
+            if (defined($1)) {
+                chomp($content = $1);
+                $content =~ tr/\r//d;
+                $content .= "\n";
             }
             else {
                 $content = "";
@@ -369,7 +371,9 @@ while (<>) {
         }
         else {
             my ($line) = ( $_ =~ $language->{filter} );
+
             if ($line) {
+                $line =~ tr/\r//d;
                 $content .= $line . "\n";
             }
             else {
