@@ -63,7 +63,7 @@ EOD
         }
     }
 
-    print "\n###Brief content:\n\n";
+    print "\n### Brief content:\n\n";
     if (scalar(@{ $m->{'functions'} }) > 0) {
         print "**Functions**:\n\n";
         foreach ( @{ $m->{'functions'} } ) {
