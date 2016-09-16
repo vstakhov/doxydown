@@ -16,7 +16,7 @@ my %languages = (
     c => {
         start  => qr/^\s*\/\*\*\*(?:\s*|(\s+\S.+\s*))$/,
         end    => qr/^\s*\*+\/\s*$/,
-        filter => qr/^(?:\s*\*+\s?)?(\s*[^*].+)\s*$/,
+        filter => qr/^(?:\s*\*+\s*)?(\s*\S.+)\s*$/,
     },
     lua => {
         start  => qr/^\s*\--\[\[\[\s*$/,
@@ -100,7 +100,7 @@ EOD
         }
     }
     else {
-        print "\tnothing\n";
+        print "No parameters\n";
     }
     print "\n**Returns:**\n\n";
     if ( $f->{'return'} && $f->{'return'}->{'description'} ) {
@@ -113,7 +113,7 @@ EOD
         }
     }
     else {
-        print "\tnothing\n";
+        print "No return\n";
     }
     if ( $f->{'example'} ) {
         print <<EOD;
