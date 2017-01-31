@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-$VERSION = "0.1.3";
+$VERSION = "0.1.4";
 
 use strict;
 use warnings;
@@ -53,9 +53,9 @@ EOD
 
 ### Example:
 
-```$m->{'example_language'}
+~~~$m->{'example_language'}
 $m->{'example'}
-```
+~~~
 EOD
     }
 
@@ -132,11 +132,11 @@ EOD
     if ( $f->{'example'} ) {
         print <<EOD;
 
-Example:
+### Example:
 
-```$f->{'example_language'}
+~~~$f->{'example_language'}
 $f->{'example'}
-```
+~~~
 EOD
     }
 }
@@ -369,6 +369,9 @@ $language = $languages{ lc $options{l} } if $options{l};
 if ( !$language ) {
     $language = $languages{c};
 }
+
+## TODO: select language based on file extention
+## TODO: change calling structure to allow looping through directory
 
 use constant {
     STATE_READ_SKIP    => 0,
