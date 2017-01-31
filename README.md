@@ -144,7 +144,7 @@ accessed by [this address](https://rspamd.com/doc/lua/ucl.html).
 
 ## Program invocation
 
-	doxydown [-hg] [-l language] < input_source > markdown.md
+	doxydown [-hg] [-e language] [-l language] < input_source > markdown.md
 
 * `-h`: help message
 * `-e`: sets default example language (default: lua)
