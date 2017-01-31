@@ -37,26 +37,25 @@ in `C` or by
 
 	--[[[
 
-in `lua`. The end of documentation block is the normal multiline comment ending
+in `lua` or `sql`. The end of documentation block is the normal multiline comment ending
 specific for the input language. Doxydown also strips an initial comment character,
 therefore the following inputs are equal:
 
-~~~c
+```c
 /***
  * some text
  * other text
  *
  */
-~~~
+```
 and
-
-~~~c
+```c
 /***
 some text
 other text
 
 */
-~~~
+```
 
 Note that doxydown preserves empty lines and all markdown elements.
 
