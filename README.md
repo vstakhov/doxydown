@@ -4,7 +4,7 @@
 
 Doxydown is an utility to convert `doxygen`-like comments from the source code to markdown.
 Unlike other documentation systems, `doxydown` is specifically designed to generate markdown output only.
-At the moment, doxydown can work with C and lua comments and produce kramdown/pandoc or github
+At the moment, doxydown can work with C, Lua and SQL comments and produce kramdown/pandoc or GitHub
 flavoured markdown. Doxydown produces output with anchors, links and table of content.
 It also can highlight syntax for examples in the documentation.
 
