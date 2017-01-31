@@ -45,8 +45,12 @@ For example:
 
 ```lua
 --[[[
--- This is a SQL block
+-- This is a Lua SQL block
 --]]
+
+--------
+-- Alternate Lua and SQL Format
+--------
 ```
 
 ```perl
