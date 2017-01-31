@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 
-$VERSION = "0.1.2";
+$VERSION = "0.1.3";
 
 use strict;
 use warnings;
@@ -27,6 +27,11 @@ my %languages = (
         start  => qr/^\s*\--\[\[\[\s*$/,
         end    => qr/^\s*--\]\]\s*/,
         filter => qr/^(?:\s*--\s)?(\s*\S.+)\s*$/,
+    },
+    pl => {
+        start  => qr/^\s*\##+\s*$/,
+        end    => qr/^\s*##+\s*/,
+        filter => qr/^(?:\s*#+\s?)(\s*\S.+)\s*$/,
     },
 );
 
