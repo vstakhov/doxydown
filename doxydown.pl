@@ -46,11 +46,11 @@ EOD
     if ( $m->{'example'} ) {
         print <<EOD;
 
-Example:
+### Example:
 
-~~~$m->{'example_language'}
+```$m->{'example_language'}
 $m->{'example'}
-~~~
+```
 EOD
     }
 
@@ -129,9 +129,9 @@ EOD
 
 Example:
 
-~~~$f->{'example_language'}
+```$f->{'example_language'}
 $f->{'example'}
-~~~
+```
 EOD
     }
 }
