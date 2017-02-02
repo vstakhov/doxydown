@@ -117,13 +117,13 @@ EOD
 
     print "\n**Returns:**\n\n";
 
-    if ( $f->{'return'} && $f->{'return'}->{'description'} ) {
-        $_ = $f->{'return'};
-
-        if ( $_->{'type'} ) {
-            print "- `\{$_->{'type'}\}`: $_->{'description'}\n";
-        } else {
-            print "- $_->{'description'}\n";
+    if ( $f->{'returns'} && scalar @{ $f->{'returns'} } > 0 ) {
+        foreach ( @{ $f->{'returns'} } ) {
+            if ( $_->{'type'} ) {
+                print "- `\{$_->{'type'}\}`: $_->{'description'}\n";
+            } else {
+                print "- $_->{'description'}\n";
+            }
         }
     } else {
         print "No return\n";
@@ -240,7 +240,7 @@ sub parse_function {
                 description => $2
             };
 
-            $f->{'return'} = $r;
+            push @{ $f->{'returns'} }, $r;
         } elsif ( /^\s*\@brief\s*(\S.+)$/ ) {
             $f->{'brief'} = $1;
         }
