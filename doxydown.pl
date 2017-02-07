@@ -36,9 +36,11 @@ my %languages = (
 );
 
 my $function_re = qr/^\s*\@(function|fn|method)\s*(\S.+)$/oi;
+my $struct_re = qr/^\s*\@(table|struct)\s*(\S.+)$/oi;
 my $module_re = qr/^\s*\@(?:module|file)\s*(\S.+)$/oi;
 my $language;
 
+# /function print_module_markdown
 sub print_module_markdown {
     my ( $mname, $m ) = @_;
     my $idline = $options{g} ? "" : " {#$m->{'id'}}";
@@ -72,25 +74,63 @@ EOD
         }
     }
 
-    print "\n### Brief content:\n\n";
+    sub print_table {
+        my ($f) = @_;
 
-    if (scalar(@{ $m->{'functions'} }) > 0) {
-        print "**Functions**:\n\n";
- 
-        foreach ( @{ $m->{'functions'} } ) {
-            print_func($_);
+        my $name = $f->{'name'};
+        my $id   = $f->{'id'};
+
+        if ($f->{'brief'}) {
+            print "> [`$name`](#$id): ". $f->{'brief'} . "\n\n";
+        } else {
+            print "> [`$name`](#$id)\n\n";
         }
     }
 
-    if (scalar(@{ $m->{'methods'} }) > 0) {
-        print "\n\n**Methods**:\n\n";
+    print "\n### Brief content:\n\n";
 
-        foreach ( @{ $m->{'methods'} } ) {
-            print_func($_);
+    if ($m->{'functions'}) {
+        if (scalar(@{ $m->{'functions'} }) > 0) {
+            print "**Functions**:\n\n";
+ 
+            foreach ( @{ $m->{'functions'} } ) {
+                print_func($_);
+            }
+        }
+    }
+
+    if ($m->{'methods'}) {
+        if (scalar(@{ $m->{'methods'} }) > 0) {
+            print "\n\n**Methods**:\n\n";
+
+            foreach ( @{ $m->{'methods'} } ) {
+                print_func($_);
+            }
+        }
+    }
+
+    if ($m->{'tables'}) {
+        if (scalar(@{ $m->{'tables'} }) > 0) {
+            print "\n\n**Tables**:\n\n";
+
+            foreach ( @{ $m->{'tables'} } ) {
+                print_table($_);
+           }
+        }
+    }
+
+    if ($m->{'structs'}) {
+        if (scalar(@{ $m->{'structs'} }) > 0) {
+            print "\n\n**Structs**:\n\n";
+
+            foreach ( @{ $m->{'structs'} } ) {
+                print_table($_);
+            }
         }
     }
 }
 
+# /function print_function_markdown
 sub print_function_markdown {
     my ( $type, $fname, $f ) = @_;
 
@@ -141,31 +181,99 @@ EOD
     }
 }
 
+# /function print_struct_markdown
+sub print_struct_markdown {
+    my ( $type, $fname, $f ) = @_;
+
+    my $idline = $options{g} ? "" : " {#$f->{'id'}}";
+    print <<EOD;
+### $type `$fname`$idline
+
+$f->{'data'}
+EOD
+    print "\n**Elements:**\n\n";
+
+    if ( $f->{'params'} && scalar @{ $f->{'params'} } > 0 ) {
+        foreach ( @{ $f->{'params'} } ) {
+            if ( $_->{'type'} ) {
+                print
+                    "- `$_->{'name'} \{$_->{'type'}\}`: $_->{'description'}\n";
+            } else {
+                print "- `$_->{'name'}`: $_->{'description'}\n";
+            }
+        }
+    } else {
+        print "No elements\n";
+    }
+
+    if ( $f->{'example'} ) {
+        print <<EOD;
+
+### Example:
+
+~~~$f->{'example_language'}
+$f->{'example'}
+~~~
+EOD
+    }
+}
+
+# /function print_markdown
 sub print_markdown {
     for my $m (@modules) {
         my $mname = $m->{name};
 
         print_module_markdown( $mname, $m );
 
-        if ( scalar(@{ $m->{'functions'} }) > 0 ) {
-            print "\n## Functions\n\nThe module `$mname` defines the following functions.\n\n";
+        if ($m->{'functions'}) {
+            if ( scalar(@{ $m->{'functions'} }) > 0 ) {
+                print "\n## Functions\n\nThe module `$mname` defines the following functions.\n\n";
 
-            foreach ( @{ $m->{'functions'} } ) {
-                print_function_markdown( "Function", $_->{'name'}, $_ );
+                foreach ( @{ $m->{'functions'} } ) {
+                    print_function_markdown( "Function", $_->{'name'}, $_ );
  
-                print "\nBack to [module description](#$m->{'id'}).\n\n";
+                    print "\nBack to [module description](#$m->{'id'}).\n\n";
 
+                }
             }
         }
 
-        if ( scalar(@{ $m->{'methods'} }) > 0 ) {
-            print "\n## Methods\n\nThe module `$mname` defines the following methods.\n\n";
+        if ($m->{'methods'}) {
+            if ( scalar(@{ $m->{'methods'} }) > 0 ) {
+                print "\n## Methods\n\nThe module `$mname` defines the following methods.\n\n";
 
-            foreach ( @{ $m->{'methods'} } ) {
-                print_function_markdown( "Method", $_->{'name'}, $_ );
+                foreach ( @{ $m->{'methods'} } ) {
+                    print_function_markdown( "Method", $_->{'name'}, $_ );
 
-                print "\nBack to [module description](#$m->{'id'}).\n\n";
+                    print "\nBack to [module description](#$m->{'id'}).\n\n";
 
+                }
+            }
+        }
+
+        if ($m->{'tables'}) {
+            if ( scalar(@{ $m->{'tables'} }) > 0 ) {
+                print "\n## Tables\n\nThe module `$mname` defines the following tables.\n\n";
+
+                foreach ( @{ $m->{'tables'} } ) {
+                    print_struct_markdown( "Table", $_->{'name'}, $_ );
+
+                    print "\nBack to [module description](#$m->{'id'}).\n\n";
+
+                }
+            }
+        }
+
+        if ($m->{'stucts'}) {
+            if ( scalar(@{ $m->{'stucts'} }) > 0 ) {
+                print "\n## Stucts\n\nThe module `$mname` defines the following stucts.\n\n";
+
+                foreach ( @{ $m->{'stucts'} } ) {
+                    print_stuct_markdown( "Stuct", $_->{'name'}, $_ );
+
+                    print "\nBack to [module description](#$m->{'id'}).\n\n";
+
+                }
             }
         }
 
@@ -173,6 +281,7 @@ sub print_markdown {
     }
 }
 
+# /function make_id
 sub make_id {
     my ( $name, $prefix ) = @_;
 
@@ -196,6 +305,7 @@ sub make_id {
     }
 }
 
+# /function substitute_data_keywords
 sub substitute_data_keywords {
     my ($line) = @_;
 
@@ -209,11 +319,11 @@ sub substitute_data_keywords {
     return $line;
 }
 
+# /function parse_function
 sub parse_function {
     my ( $func, @data ) = @_;
 
     my ( $type, $name ) = ( $func =~ $function_re );
-
     chomp $name;
 
     my $f = {
@@ -271,11 +381,71 @@ sub parse_function {
 
     if ( $type eq "method" ) {
         push @{ $cur_module->{'methods'} }, $f;
-    } else {
+    } elsif ( $type eq "function"  ||  $type eq "fn") {
         push @{ $cur_module->{'functions'} }, $f;
     }
 }
 
+# /function parse_struct
+sub parse_struct {
+    my ( $func, @data ) = @_;
+
+    my ( $type, $name ) = ( $func =~ $struct_re );
+    chomp $name;
+
+    my $f = {
+        name             => $name,
+        data             => '',
+        example          => undef,
+        example_language => $example_language,
+        id               => make_id( $name, $type ),
+    };
+    my $example = 0;
+
+    foreach ( @data ) {
+        if ( /^\s*\@param\s*(?:\{([^}]+)\})?\s*(\S+)\s*(.+)?\s*$/ ) {
+            my $p = {
+                name => $2,
+                type => $1,
+                description => $3
+            };
+
+            push @{ $f->{'params'} }, $p;
+        } elsif ( /^\s*\@brief\s*(\S.+)$/ ) {
+            $f->{'brief'} = $1;
+        } elsif ( /^\s*\@example\s*(\S)?\s*$/ ) {
+            $example = 1;
+            if ( $1 ) {
+                $f->{'example_language'} = $1;
+            }
+        } elsif ( $_ ne $func ) {
+            if ( $example ) {
+                $f->{'example'} .= $_;
+            } else {
+                $f->{'data'} .= substitute_data_keywords($_);
+            }
+        }
+    }
+
+    if ( $f->{'data'} ) {
+        chomp $f->{'data'};
+    } elsif ($f->{'brief'}) {
+        chomp $f->{'brief'};
+        $f->{'data'} = $f->{'brief'};
+    }
+
+    if ( $f->{'example'} ) {
+        chomp $f->{'example'};
+    }
+
+    if ( $type eq "table" ) {
+        push @{ $cur_module->{'tables'} }, $f;
+    } elsif ( $type eq "struct" ) {
+        push @{ $cur_module->{'structs'} }, $f;
+    }
+}
+
+# /function parse_module
 sub parse_module {
     my ( $module, @data ) = @_;
     my ( $name ) = ( $module =~ $module_re );
@@ -327,15 +497,22 @@ sub parse_module {
     push @modules, $f;
 }
 
+# /function parse_content
 sub parse_content {
+    #
     my @func = grep /$function_re/, @_;
-
     if ( scalar @func > 0 ) {
         parse_function( $func[0], @_ );
     }
 
-    my @module = grep /$module_re/, @_;
+    #
+    my @struct = grep /$struct_re/, @_;
+    if ( scalar @struct > 0 ) {
+        parse_struct( $struct[0], @_ );
+    }
 
+    #
+    my @module = grep /$module_re/, @_;
     if ( scalar @module > 0 ) {
         parse_module( $module[0], @_ );
     }
