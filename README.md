@@ -2,61 +2,82 @@
 
 ## Introduction
 
-Doxydown is an utility to convert `doxygen`-like comments from the source code to markdown.
-Unlike other documentation systems, `doxydown` is specifically designed to generate markdown output only.
-At the moment, doxydown can work with C and lua comments and produce kramdown/pandoc or github
+Doxydown is an utility to convert Doxygen style comments from the source code to Markdown.
+Unlike other documentation systems, `doxydown` is specifically designed to generate Markdown output only.
+At the moment, doxydown can work with C, Lua, SQL, and Perl comments and produce kramdown/pandoc or GitHub
 flavoured markdown. Doxydown produces output with anchors, links and table of content.
 It also can highlight syntax for examples in the documentation.
 
 ### Why markdown
 
-Markdown is used by many contemporary engines and can be rendered to HTML using
-advanced templates, styles and scripts. Markdown provides excellent formatting
-capabilities while it doesn't require authors to be web designers to create
-documentation. Markdown is rendered by [`github`](https://github.com) and
-doxydown can generate documentation easily viewed directly inside github. Moreover,
-doxydown supports pandoc style of markdown and that means that markdown output 
-can be converted to all formats supported by pandoc (html, pdf, latex,
+Markdown is used by many contemporary engines and can be rendered to HTML using advanced templates,
+styles and scripts. Markdown provides excellent formatting capabilities while it doesn't require authors
+to be web designers to create documentation. Markdown is rendered by GitHub so doxydown can generate
+documentation is easily viewed directly inside GitHub. Moreover, doxydown supports pandoc style of markdown
+and that means that markdown output can be converted to all formats supported by pandoc (html, pdf, latex,
 man pages and many others).
 
 ### Why not `other documentation generator`
 
-Doxydown is extremely simple as it can output markdown only but it is very
-convenient tool to generate nice markdown with all features required from the
-documentation system. Doxydown uses input format that is very close to `doxygen`
-that allows to re-use the existing documentation comments. Currenly, doxydown
-does not support many features but they could be easily added on demand.
+Doxydown is extremely simple as it can output markdown only but it is very convenient tool to generate nice
+Markdown with all features required from the documentation system. Doxydown uses input format that is almost
+identical to Goxygen that allows to you to re-use the existing documentation comments. Currenly, Doxydown
+does not support many features but they could be easily added on demand. The source is meant to be easily
+hackable and easily extended.
 
 ## Input format
 
-Doxydown extracts documentation from the comments blocks. The start of block is indicated by
+Doxydown extracts documentation from the comments blocks. The start of block is indicated by a comment block.
 
-	/***  
+For example:
 
-in `C` or by
+```c
+/***
+ * This is a C block
+ */
+```
 
-	--[[[
+```lua
+--[[[
+-- This is a Lua block
+--]]
+```
 
-in `lua`. The end of documentation block is the normal multiline comment ending
-specific for the input language. Doxydown also strips an initial comment character,
-therefore the following inputs are equal:
+```lua
+--[[[
+-- This is a Lua SQL block
+--]]
 
-~~~c
+--------
+-- Alternate Lua and SQL Format
+--------
+```
+
+```perl
+###
+# This is a Perl block
+###
+```
+
+
+Doxydown also strips an initial comment characters if you have used them for decoration.
+The following comment blocks are synatically identical...
+
+```c
 /***
  * some text
  * other text
  *
  */
-~~~
-and
+```
 
-~~~c
+```c
 /***
 some text
 other text
 
 */
-~~~
+```
 
 Note that doxydown preserves empty lines and all markdown elements.
 
@@ -127,7 +148,7 @@ accessed by [this address](https://rspamd.com/doc/lua/ucl.html).
 
 ## Program invocation
 
-	doxydown [-hg] [-l language] < input_source > markdown.md
+	doxydown [-hg] [-e language] [-l language] < input_source > markdown.md
 
 * `-h`: help message
 * `-e`: sets default example language (default: lua)
